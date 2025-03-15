@@ -243,6 +243,102 @@
     }
 }
 
+
+
+.publications-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.publication-item {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.publication-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.publication-thumbnail {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 aspect ratio */
+    overflow: hidden;
+    background-color: #f7f7f7;
+}
+
+.publication-thumbnail img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.publication-item:hover .publication-thumbnail img {
+    transform: scale(1.05);
+}
+
+.publication-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.publication-overlay i {
+    color: white;
+    font-size: 2.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.publication-item:hover .publication-overlay {
+    opacity: 1;
+}
+
+.publication-item h3 {
+    padding: 15px 15px 5px;
+    margin-top: 0;
+    font-size: 1.2rem;
+}
+
+.publication-date {
+    padding: 0 15px;
+    margin: 0 0 5px;
+    color: #666;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.publication-excerpt {
+    padding: 0 15px 15px;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .publications-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+
     </style>
 </head>
 
@@ -253,7 +349,7 @@
                 <img src="./pic.jpg" alt="Vivek Juneja Profile Photo" class="profile-image">
                 <div>
                     <h1>Vivek Juneja</h1>
-                    <p>Engineering Leader | Product Development | Machine Learning</p>
+                    <p>Engineering Leader | Product Development | Teaching</p>
                     <div class="social-links">
                         <a href="https://github.com/vivekjuneja" aria-label="GitHub" target="_blank"><i class="fab fa-github"></i></a>
                         <a href="https://www.linkedin.com/in/geekcloud/" aria-label="LinkedIn" target="_blank"><i
@@ -276,7 +372,7 @@
                 <span class="expertise-tag">Large Language Models</span>
                 <span class="expertise-tag">Zero to One Products</span>
                 <span class="expertise-tag">Technology Strategy</span>
-                <span class="expertise-tag">Public Communication</span>
+                <span class="expertise-tag">Public Speaking</span>
             </div>
         </div>
     </div>
@@ -411,9 +507,165 @@
         </div>
     </div>
 
-    
-
     <div class="section section-white">
+        <div class="content-wrapper">
+            <h2>Publications</h2>
+            <div class="publications-container">
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/building-and-sustaining-high-performing" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F0cba9a76-981c-4690-91af-7a2b529c49f8_2222x976.png" alt="The Future of Engineering Leadership">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>Building and sustaining High performing Teams</h3>
+                    <p class="publication-excerpt">Six elements of building teams that are high performing and leadership behaviours that sustain that performance over time
+                    </p>
+                </div>
+                
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/the-changing-role-of-middle-management" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F586522e2-e81e-4080-a67b-448a299cb2fc_3024x4032.jpeg" alt="The changing role of Middle management in Technology teams">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>The changing role of Middle management in Technology teams</h3>
+                    <p class="publication-excerpt">What the last 2 years have taught me about the role of Middle management and how it is changing for the "better"</p>
+                </div>
+                
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/decision-making-strategies-for-agile" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdc4af67d-47c2-458e-a298-cf252386c465_3024x4032.jpeg" alt="Decision making strategies for Agile Architecture">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>Decision making strategies for Agile Architecture</h3>
+                    <p class="publication-excerpt">Ideas to make technical decisions when designing architecture in an iterative way</p>
+                </div>
+
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/mental-models-that-helps-make-effective" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F479d0b12-e372-40d6-85bc-ecd8fa52dc16_3024x4032.jpeg" alt="Mental Models that helps make effective decision makers">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>Mental Models that helps make effective decision makers</h3>
+                    <p class="publication-excerpt">An introduction to adopting mental models to become better as a decision maker</p>
+                </div>
+
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/how-to-manage-bullies-as-a-leader" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F737a1370-10ad-45c7-ab14-931e9548faec_1280x960.jpeg" alt="How to manage bullies as a leader ?">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>How to manage bullies as a leader ?</h3>
+                    <p class="publication-excerpt">Tactics to deal with bullies in your role as a leader</p>
+                </div>
+
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/strategies-to-build-trust-as-a-new" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F62cc50a9-20ea-4338-a6fa-2ade7c9ed44b_2592x1728.jpeg" alt="Strategies to build trust as a new leader joining a team">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>Strategies to build trust as a new leader joining a team</h3>
+                    <p class="publication-excerpt">5 tips I shared with a recent Leadership bootcamp cohort when asked about strategies to build trust as a new leader when you inherit a team</p>
+                </div>
+
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/what-do-you-mean-when-you-want-to" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F097a159f-81bb-4898-9ad5-979bd8ca692b_3750x2058.png" alt="What do you mean when you want to know about software architecture ?">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>What do you mean when you want to know about software architecture ?</h3>
+                    <p class="publication-excerpt">My take on the simple yet overloaded question about whatever Software Architecture is</p>
+                </div>
+
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/meetings-are-not-bad-we-make-it-bad-d69" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fec187416-c015-4dd0-a04f-fb92bccbbcaf_960x540.jpeg" alt="Meetings are not bad. We make it bad / Part 2">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>Meetings are not bad. We make it bad / Part 2</h3>
+                    <p class="publication-excerpt">Some more obvious and non-obvious ideas to make your next meetings better</p>
+                </div>
+
+
+
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/meetings-are-not-bad-we-make-it-bad" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ffaa3ed09-1b1c-4ed4-b741-3a8754a3a445_1534x938.jpeg" alt="Meetings are not bad. We make it bad / Part 1">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>Meetings are not bad. We make it bad / Part 1</h3>
+                    <p class="publication-excerpt">Some obvious and non-obvious ideas to make your next meetings better</p>
+                </div>
+
+
+
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/how-to-disagree-without-being-a-hole" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F5558293d-7c59-462e-9b01-fbe3065f5124_1875x1707.jpeg" alt="How to disagree without being a**-hole">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>How to disagree without being a**-hole</h3>
+                    <p class="publication-excerpt">Finding ways to disagree without damaging relationship is an underrated skill</p>
+                </div>
+
+
+                <div class="publication-item">
+                    <div class="publication-thumbnail">
+                        <a href="https://autobehave.substack.com/p/leadership-and-management-enable" target="_blank">
+                            <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff0ca3645-2e50-442a-8a1b-f709e9c8dcca_1400x933.jpeg" alt="Leadership and Management enable empowered teams">
+                            <div class="publication-overlay">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        </a>
+                    </div>
+                    <h3>Leadership and Management enable empowered teams</h3>
+                    <p class="publication-excerpt">Deriving Automatic behaviours from Marty Cagan to build empowered teams</p>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="section section-gray">
         <div class="content-wrapper">
             <h2>Contact</h2>
             <p>Feel free to reach out via <a href="mailto:vivekjuneja@gmail.com">email</a> or connect with me on <a
