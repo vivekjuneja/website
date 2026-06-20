@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision Prompt Simulator</title>
+<style>
+  :root{
+    --paper:#E7E2D8;
+    --panel:#EEEAE1;
+    --surround:#F3F2F0;
+    --ink:#1B1A17;
+    --ink-soft:#54514A;
+    --line:#cdc6b8;
+    --green:#2F6F4E;
+    --indigo:#574FD6;
+    --terra:#C25A41;
+    --card:#171615;
+    --card-text:#F2EFE6;
+    --serif:"Iowan Old Style",Georgia,Palatino,"Palatino Linotype",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--surround);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:28px 18px 80px;
+  }
+  .wrap{max-width:1060px;margin:0 auto}
+
+  /* Header */
+  header.top{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:30px 30px 26px;
+    margin-bottom:18px;
+  }
+  .kicker{
+    font-family:var(--sans);
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-soft);margin:0 0 10px;
+  }
+  h1{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:clamp(28px,4.4vw,44px);
+    line-height:1.05;
+    margin:0 0 12px;
+    letter-spacing:.2px;
+  }
+  h1 .u{text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:2px}
+  header.top p{margin:0;max-width:62ch;color:var(--ink-soft);font-size:15.5px}
+
+  /* Panels */
+  .panel{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:24px 26px;
+    margin-bottom:18px;
+  }
+  .step-label{
+    display:flex;align-items:baseline;gap:12px;margin:0 0 14px;
+  }
+  .step-num{
+    font-family:var(--serif);font-size:20px;font-weight:600;
+    width:30px;height:30px;flex:0 0 30px;border-radius:50%;
+    border:1.5px solid var(--ink);display:grid;place-items:center;line-height:1;
+  }
+  .step-label h2{font-family:var(--serif);font-weight:600;font-size:22px;margin:0;letter-spacing:.2px}
+  .step-label .hint{margin:2px 0 0;color:var(--ink-soft);font-size:13.5px}
+
+  /* Scenario chips */
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{
+    font-family:var(--sans);font-size:13.5px;
+    background:var(--panel);border:1px solid var(--line);
+    color:var(--ink);border-radius:999px;padding:8px 15px;cursor:pointer;
+    transition:background .12s ease,border-color .12s ease,transform .04s ease;
+  }
+  .chip:hover{background:#fff;border-color:#b7ae9d}
+  .chip:active{transform:translateY(1px)}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .chip.own{font-style:italic}
+
+  /* Context fields */
+  .fields{display:grid;gap:14px}
+  .field label{display:block;font-size:13px;font-weight:600;letter-spacing:.02em;margin:0 0 5px}
+  .field .sub{font-weight:400;color:var(--ink-soft)}
+  .field textarea,.field input{
+    width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);
+    background:#fbfaf6;border:1px solid var(--line);border-radius:11px;
+    padding:11px 13px;resize:vertical;
+  }
+  .field textarea:focus,.field input:focus{outline:2px solid var(--indigo);outline-offset:1px;border-color:var(--indigo)}
+  #f_decision{min-height:46px}
+  #f_context{min-height:96px}
+  #f_options{min-height:72px}
+
+  /* Working decision banner */
+  .working{
+    display:none;margin-top:14px;padding:11px 14px;border-radius:11px;
+    background:var(--panel);border:1px dashed #b7ae9d;font-size:13.5px;color:var(--ink-soft);
+  }
+  .working.show{display:block}
+  .working b{color:var(--ink);font-weight:600}
+
+  /* Phase columns */
+  .phases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .phase{
+    border:1px solid var(--line);border-radius:14px;padding:16px 15px 15px;background:var(--panel);
+    display:flex;flex-direction:column;
+  }
+  .phase h3{
+    font-family:var(--serif);font-weight:600;font-size:19px;margin:0 0 2px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .phase .dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px}
+  .phase[data-p="recognize"] .dot{background:var(--green)}
+  .phase[data-p="dissect"] .dot{background:var(--indigo)}
+  .phase[data-p="play"] .dot{background:var(--terra)}
+  .phase .desc{font-size:12.5px;color:var(--ink-soft);margin:0 0 13px;min-height:32px}
+
+  .move{
+    text-align:left;width:100%;font-family:var(--sans);font-size:13.5px;color:var(--ink);
+    background:#fbfaf6;border:1px solid var(--line);border-left-width:3px;border-radius:9px;
+    padding:9px 11px;margin-bottom:8px;cursor:pointer;line-height:1.3;
+    transition:background .12s ease,transform .04s ease;
+  }
+  .move .mlabel{font-weight:600;display:block}
+  .move .mgloss{color:var(--ink-soft);font-size:12px}
+  .phase[data-p="recognize"] .move{border-left-color:var(--green)}
+  .phase[data-p="dissect"] .move{border-left-color:var(--indigo)}
+  .phase[data-p="play"] .move{border-left-color:var(--terra)}
+  .move:hover{background:#fff}
+  .move:active{transform:translateY(1px)}
+  .move[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+  .move[aria-pressed="true"] .mgloss{color:#cfc9bb}
+
+  .phase .spacer{flex:1}
+  .run-phase{
+    margin-top:6px;width:100%;border:none;border-radius:9px;cursor:pointer;
+    font-family:var(--sans);font-weight:600;font-size:13.5px;color:#fff;padding:10px;
+    transition:filter .12s ease,transform .04s ease;
+  }
+  .run-phase:active{transform:translateY(1px)}
+  .phase[data-p="recognize"] .run-phase{background:var(--green)}
+  .phase[data-p="dissect"] .run-phase{background:var(--indigo)}
+  .phase[data-p="play"] .run-phase{background:var(--terra)}
+  .run-phase:hover{filter:brightness(1.08)}
+
+  .run-all{
+    margin-top:16px;width:100%;border:none;border-radius:12px;cursor:pointer;
+    background:var(--ink);color:var(--paper);font-family:var(--serif);font-weight:600;
+    font-size:18px;padding:15px;letter-spacing:.3px;
+    transition:filter .12s ease,transform .04s ease;
+  }
+  .run-all:hover{filter:brightness(1.15)}
+  .run-all:active{transform:translateY(1px)}
+
+  /* Output */
+  .out-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .out-head .which{font-family:var(--serif);font-size:18px;font-weight:600}
+  .out-head .which .tag{
+    font-family:var(--sans);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:#fff;padding:3px 9px;border-radius:999px;margin-right:9px;vertical-align:2px;
+  }
+  .tag.recognize{background:var(--green)} .tag.dissect{background:var(--indigo)}
+  .tag.play{background:var(--terra)} .tag.all{background:var(--ink)}
+  .copybtn{
+    border:none;border-radius:10px;cursor:pointer;background:var(--ink);color:var(--paper);
+    font-family:var(--sans);font-weight:600;font-size:14px;padding:10px 18px;
+    transition:filter .12s ease,transform .04s ease;
+  }
+  .copybtn:hover{filter:brightness(1.18)} .copybtn:active{transform:translateY(1px)}
+  .copybtn.ok{background:var(--green)}
+  .promptcard{
+    background:var(--card);color:var(--card-text);border-radius:14px;
+    padding:20px 22px;white-space:pre-wrap;word-wrap:break-word;
+    font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.6;
+    border:3px solid #fff;min-height:120px;
+  }
+  .empty{color:#b9b3a6;font-family:var(--sans);font-style:italic}
+
+  footer.note{color:var(--ink-soft);font-size:12.5px;text-align:center;margin-top:22px;line-height:1.6}
+  footer.note b{color:var(--ink)}
+
+  :focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+
+  @media (max-width:760px){
+    .phases{grid-template-columns:1fr}
+    .panel{padding:20px 18px}
+    header.top{padding:24px 20px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="kicker">Decision-making with AI · practice tool</p>
+    <h1>The <span class="u">Recognize · Dissect · Play</span> simulator</h1>
+    <p>Set your decision once. Then run any single move on its own, a whole phase at a time, or all three phases end to end. Each click builds a ready-to-paste prompt — drop it into whichever AI tool you prefer.</p>
+  </header>
+
+  <!-- STEP 1 -->
+  <section class="panel">
+    <div class="step-label">
+      <span class="step-num">1</span>
+      <div>
+        <h2>Pick a practice decision</h2>
+        <p class="hint">Start from a scenario, or write your own. You can edit any field afterward.</p>
+      </div>
+    </div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel">
+    <div class="step-label">
+      <span class="step-num">2</span>
+      <div>
+        <h2>Set the context once</h2>
+        <p class="hint">This block is reused in every prompt below, so you only fill it in here.</p>
+      </div>
+    </div>
+    <div class="fields">
+      <div class="field">
+        <label for="f_decision">Decision <span class="sub">— in one sentence</span></label>
+        <textarea id="f_decision" placeholder="e.g. Which of two finalists to hire for the senior lead role."></textarea>
+      </div>
+      <div class="field">
+        <label for="f_context">Context <span class="sub">— key facts, constraints, what's at stake</span></label>
+        <textarea id="f_context" placeholder="What matters here, what's fixed, what you're worried about…"></textarea>
+      </div>
+      <div class="field">
+        <label for="f_options">Options <span class="sub">— the choices you're weighing (optional)</span></label>
+        <textarea id="f_options" placeholder="A) …&#10;B) …&#10;C) …"></textarea>
+      </div>
+    </div>
+    <div class="working" id="working"></div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel">
+    <div class="step-label">
+      <span class="step-num">3</span>
+      <div>
+        <h2>Choose a move</h2>
+        <p class="hint">Single move = practice one skill. Whole phase = a full pass. All three = the complete method.</p>
+      </div>
+    </div>
+
+    <div class="phases">
+      <div class="phase" data-p="recognize">
+        <h3><span class="dot"></span>Recognize</h3>
+        <p class="desc">How much should this decision even cost you — effort, reversibility, downside.</p>
+        <button class="move" data-move="r_thermostat"><span class="mlabel">Thermostat for effort</span><span class="mgloss">Over- or under-thinking it?</span></button>
+        <button class="move" data-move="r_door"><span class="mlabel">One-way / two-way door</span><span class="mgloss">How reversible is it really?</span></button>
+        <button class="move" data-move="r_blast"><span class="mlabel">Blast radius</span><span class="mgloss">Who absorbs the worst case?</span></button>
+        <div class="spacer"></div>
+        <button class="run-phase" data-move="r_all">Run whole Recognize ↓</button>
+      </div>
+
+      <div class="phase" data-p="dissect">
+        <h3><span class="dot"></span>Dissect</h3>
+        <p class="desc">Examine the frame you're using before you start solving.</p>
+        <button class="move" data-move="d_mirror"><span class="mlabel">Mirror</span><span class="mgloss">Make my frame visible</span></button>
+        <button class="move" data-move="d_challenger"><span class="mlabel">Challenger</span><span class="mgloss">Stress-test the frame</span></button>
+        <button class="move" data-move="d_reframe"><span class="mlabel">Reframing generator</span><span class="mgloss">Build better frames</span></button>
+        <div class="spacer"></div>
+        <button class="run-phase" data-move="d_all">Run whole Dissect ↓</button>
+      </div>
+
+      <div class="phase" data-p="play">
+        <h3><span class="dot"></span>Play</h3>
+        <p class="desc">Expand and pressure-test the options on the table.</p>
+        <button class="move" data-move="p_menu"><span class="mlabel">Break the fixed menu</span><span class="mgloss">Fresh alternatives</span></button>
+        <button class="move" data-move="p_and"><span class="mlabel">AND, not OR</span><span class="mgloss">Combine options</span></button>
+        <button class="move" data-move="p_cost"><span class="mlabel">Opportunity cost</span><span class="mgloss">What you give up</span></button>
+        <button class="move" data-move="p_disconfirm"><span class="mlabel">Change my mind</span><span class="mgloss">What evidence would flip it</span></button>
+        <div class="spacer"></div>
+        <button class="run-phase" data-move="p_all">Run whole Play ↓</button>
+      </div>
+    </div>
+
+    <button class="run-all" data-move="master">Run all three phases, end to end →</button>
+  </section>
+
+  <!-- OUTPUT -->
+  <section class="panel">
+    <div class="out-head">
+      <div class="which" id="which">Your prompt</div>
+      <button class="copybtn" id="copybtn">Copy prompt</button>
+    </div>
+    <div class="promptcard" id="output"><span class="empty">Pick a move above and your ready-to-paste prompt appears here.</span></div>
+  </section>
+
+  <footer class="note">
+    Nothing is sent anywhere — this page just assembles text for you to paste.<br>
+    <b>Tip:</b> for a real, high-stakes decision, run the moves one at a time so the AI goes deep on each.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Practice scenarios ---------- */
+  var SCENARIOS = [
+    { name:"Two final candidates",
+      decision:"Which of two finalists to hire for a senior team-lead role.",
+      context:"We've interviewed both thoroughly. Candidate A is safe and proven — strong track record, productive from day one, limited upside. Candidate B is higher-ceiling but riskier — less experience at this level, could be exceptional or could struggle. The team is split. We need someone in the seat within six weeks.",
+      options:"A) Hire the safe, proven candidate\nB) Hire the high-ceiling, riskier candidate\nC) Re-open the search" },
+    { name:"Month-to-month vendor",
+      decision:"Whether to sign an annual vendor contract or stay month-to-month.",
+      context:"A vendor offers month-to-month at a higher unit price, or a 12-month commitment at a 30% discount. We're fairly confident we'll keep using them, but the roadmap could shift and we might outgrow them within two quarters. Switching later would cost migration effort.",
+      options:"A) Sign the 12-month discounted contract\nB) Stay month-to-month at higher cost\nC) Negotiate a 3-month trial with an option to convert" },
+    { name:"Sunset a legacy product",
+      decision:"Whether to sunset a legacy product line that still generates revenue.",
+      context:"The legacy product still brings about 15% of revenue but is declining, costly to maintain, and pulls engineers off the new platform. Some long-time customers depend on it. Retiring it frees the team but risks churn and reputation; keeping it slows the bet on the future.",
+      options:"A) Sunset it on a 12-month wind-down\nB) Keep it on minimal life-support\nC) Spin it off or hand it to a partner" },
+    { name:"Raise prices 20%",
+      decision:"Whether to raise prices by 20% across the board.",
+      context:"Costs are up and margins are thin. A 20% increase would restore healthy margins but risks churn, especially among smaller, price-sensitive accounts. Larger accounts seem less sensitive. We haven't raised prices in three years. Competitor pricing is mixed.",
+      options:"A) Raise 20% across all accounts\nB) Raise on new customers only, grandfather existing\nC) Tiered: small increase on big accounts, larger on small ones" },
+    { name:"Take the management role",
+      decision:"Whether to accept an internal promotion into management or stay as an individual contributor.",
+      context:"I've been offered a step up to manage the team — more scope, more pay, more influence, but less of the hands-on work I love and a skill set I haven't proven. Declining might close the door for a while. Taking it and disliking it would be hard to reverse cleanly.",
+      options:"A) Accept the management role\nB) Decline and stay an IC\nC) Propose a tech-lead hybrid trial first" },
+    { name:"Standardize the team's tooling",
+      decision:"Whether to standardize the whole team on one tool/format now or let teams choose.",
+      context:"Teams currently use different tools, which slows collaboration. Standardizing creates consistency but forces some teams off tools they like and is hard to walk back once everyone migrates. Letting it ride keeps flexibility, but the fragmentation cost is growing.",
+      options:"A) Mandate one standard now\nB) Recommend a default but allow exceptions\nC) Run a one-quarter pilot before deciding" }
+  ];
+
+  /* ---------- Prompt bodies (header is prepended automatically) ---------- */
+  var COACH = "Act as a sharp, neutral decision coach. Don't tell me what to choose yet.";
+
+  var BODIES = {
+    /* RECOGNIZE — single moves */
+    r_thermostat: COACH+"\n\nEFFORT CALIBRATION\nAm I over- or under-thinking this relative to what's actually at stake? Tell me whether this deserves a fast intuitive call or slow deliberate analysis, and why.",
+    r_door: COACH+"\n\nREVERSIBILITY\nIs this a one-way door or a two-way door? If I'm wrong, what does it actually cost to reverse — in money, time, trust, and reputation? Be specific, and flag if it's reversible in mechanism but irreversible in perception.",
+    r_blast: COACH+"\n\nBLAST RADIUS\nWho is affected by each option and how? What's the realistic worst case if this goes wrong, who absorbs it, and is the downside recoverable or catastrophic? Separate \"embarrassing\" from \"existential.\"",
+    /* RECOGNIZE — whole phase */
+    r_all: COACH+" Size up this decision across three lenses:\n\n1. EFFORT CALIBRATION\nAm I over- or under-thinking this relative to what's at stake? Fast intuitive call or slow deliberate analysis — and why?\n\n2. REVERSIBILITY\nIs this a one-way door or a two-way door? If I'm wrong, what does it cost to reverse in money, time, trust, and reputation? Flag if it's reversible in mechanism but irreversible in perception.\n\n3. BLAST RADIUS\nWho's affected and how? Realistic worst case, who absorbs it, recoverable or catastrophic? Separate \"embarrassing\" from \"existential.\"\n\nEnd with a one-line verdict: how much of my energy this decision actually warrants.",
+
+    /* DISSECT — single moves */
+    d_mirror: "Acting as a neutral mirror, please:\n1. Describe the frame I appear to be using\n2. Identify its embedded assumptions\n3. Explain what success I seem to be optimising for\n4. Show what this frame makes me focus on\n5. Highlight what may be outside my awareness\n\nDo NOT reframe or recommend a strategy yet. Focus only on making my current frame visible, and state it back to me in one clear sentence.",
+    d_challenger: "Our dominant frame for this decision is:\n[PASTE YOUR DOMINANT FRAME — one sentence]\n\nPlease challenge this frame:\n1. Decision — Is this the right decision question? Am I solving the right problem?\n2. Boundaries — What's in or out of scope? What have I left out that should matter?\n3. Viewpoint — From whose perspective am I judging success? Whose is missing?\n\nAlso: What assumptions are embedded? What does this frame help me see, and what does it cause me to miss? Do NOT recommend a strategy yet — focus only on whether this is the right frame.",
+    d_reframe: "Our current dominant frame is:\n[PASTE DOMINANT FRAME]\n\nPlease help me build better frames:\n1. Generate 3–5 alternative frames that are genuinely different (not re-wordings)\n2. For each, explain: what it assumes, what it highlights, what it causes me to miss, and what success looks like under it\n3. Assess which frames best fit the actual situation\n4. Recommend the 1–2 strongest candidate frames\n\nDo NOT recommend a strategy yet — focus only on building better frames.",
+    /* DISSECT — whole phase */
+    d_all: "Act as a neutral thinking partner. Work through these three steps in order. Do NOT recommend a strategy or a choice at any point — focus only on the frame.\n\nSTEP 1 — MIRROR (make my frame visible)\nDescribe the frame I appear to be using, its embedded assumptions, what success I'm optimising for, what it makes me focus on, and what may be outside my awareness. Then state my dominant frame back to me in one clear sentence before moving on.\n\nSTEP 2 — CHALLENGER (stress-test that frame)\nAm I solving the right problem? What's in or out of scope, and what have I left out? From whose perspective am I judging success, and whose is missing? What does this frame help me see, and cause me to miss?\n\nSTEP 3 — REFRAME (build better frames)\nGenerate 3–5 genuinely different frames. For each: what it assumes, highlights, makes me miss, and what success looks like under it. Then recommend the 1–2 strongest for this situation.",
+
+    /* PLAY — single moves */
+    p_menu: "BREAK THE FIXED MENU\nAssume my current front-runner is suddenly impossible — off the table. What would I do instead? Generate 2–3 genuinely different alternatives I haven't considered, not variations of the same idea.",
+    p_and: "AND, NOT OR\nDon't make me pick just one. Propose 2–3 ways the options above could work together — a hybrid, a sequence, or a small parallel bet on each. Flag where combining is genuinely stronger and where it's just a muddled compromise that's worse than either alone.",
+    p_cost: "OPPORTUNITY COST\nFor each option above, spell out what I'm giving up — money, time, attention, future optionality — by choosing it over the rest. Name the best thing I can no longer do under each, and surface the costs I'm probably ignoring.",
+    p_disconfirm: "CHANGE MY MIND\nIf I'm leaning toward one option: what specific evidence, if it were true, would flip me off it — and how could I test for that cheaply?\nIf I'm not leaning anywhere: what single piece of information would most separate these options — the one question I should answer before anything else?",
+    /* PLAY — whole phase */
+    p_all: "Act as a creative but rigorous option-generator. Work through four moves:\n\n1. BREAK THE MENU\nAssume my front-runner is off the table. Give 2–3 genuinely different alternatives I haven't considered — not variations of the same idea.\n\n2. AND, NOT OR\nPropose 2–3 ways the options could work together — hybrid, sequence, or parallel bet. Flag where combining is stronger and where it's a muddled compromise worse than either alone.\n\n3. OPPORTUNITY COST\nFor each option, name what I'm giving up (money, time, attention, optionality) and the best thing I can no longer do under it.\n\n4. WHAT WOULD CHANGE MY MIND\nWhat evidence would flip my leaning, and how could I test it cheaply? If I'm not leaning anywhere, what one question most separates the options?",
+
+    /* ALL PHASES — master */
+    master: "Act as my decision-making thinking partner. Walk me through three phases below. Be concise in each section — a few sharp sentences, not an essay. Do NOT jump to a final recommendation until the very end, and even then frame it as a candidate, not a verdict.\n\n=== PHASE 1: RECOGNIZE (how much should I think about this?) ===\n• Effort: Am I over- or under-thinking this vs. what's at stake? Fast call or slow analysis?\n• Reversibility: One-way or two-way door? Real cost to reverse in money, time, trust, reputation?\n• Blast radius: Who's affected, worst case, who absorbs it, recoverable or catastrophic? Separate \"embarrassing\" from \"existential.\"\n\n=== PHASE 2: DISSECT (am I framing this right?) ===\n• Name the frame I appear to be using and its hidden assumptions.\n• Challenge it: am I solving the right problem? What's out of scope? Whose perspective is missing?\n• Offer 2–3 genuinely different frames and the strongest one for this situation.\n\n=== PHASE 3: PLAY (what are my real options?) ===\n• If my front-runner were off the table, what would I do instead? 2–3 fresh alternatives.\n• Could options combine — hybrid, sequence, parallel bet — and where would that backfire?\n• For each option, what's the opportunity cost — the best thing I can no longer do?\n• What single piece of evidence would most change my mind, and how could I test it cheaply?\n\n=== CLOSE ===\nSummarise what this revealed, name the one question I should resolve first, then suggest a candidate direction with its main risk."
+  };
+
+  /* move -> {label, phase} for the output header */
+  var META = {
+    r_thermostat:["Thermostat for effort","recognize"], r_door:["One-way / two-way door","recognize"],
+    r_blast:["Blast radius","recognize"], r_all:["Recognize — full phase","recognize"],
+    d_mirror:["Mirror","dissect"], d_challenger:["Challenger","dissect"],
+    d_reframe:["Reframing generator","dissect"], d_all:["Dissect — full phase","dissect"],
+    p_menu:["Break the fixed menu","play"], p_and:["AND, not OR","play"],
+    p_cost:["Opportunity cost","play"], p_disconfirm:["Change my mind","play"],
+    p_all:["Play — full phase","play"], master:["All three phases","all"]
+  };
+  var PHASE_NAME = {recognize:"Recognize",dissect:"Dissect",play:"Play",all:"All phases"};
+
+  /* ---------- Elements ---------- */
+  var $ = function(id){return document.getElementById(id);};
+  var elDecision=$("f_decision"), elContext=$("f_context"), elOptions=$("f_options");
+  var elOut=$("output"), elWhich=$("which"), elCopy=$("copybtn"), elWorking=$("working");
+  var activeMove=null;
+
+  /* ---------- Build scenario chips ---------- */
+  var chipWrap=$("chips");
+  SCENARIOS.forEach(function(s,i){
+    var b=document.createElement("button");
+    b.className="chip"; b.type="button"; b.textContent=s.name;
+    b.setAttribute("aria-pressed","false");
+    b.addEventListener("click",function(){
+      elDecision.value=s.decision; elContext.value=s.context; elOptions.value=s.options;
+      setPressedChip(i); refresh();
+    });
+    chipWrap.appendChild(b);
+  });
+  var ownBtn=document.createElement("button");
+  ownBtn.className="chip own"; ownBtn.type="button"; ownBtn.textContent="Write my own";
+  ownBtn.setAttribute("aria-pressed","false");
+  ownBtn.addEventListener("click",function(){
+    elDecision.value=""; elContext.value=""; elOptions.value="";
+    setPressedChip(-1); elDecision.focus(); refresh();
+  });
+  chipWrap.appendChild(ownBtn);
+
+  function setPressedChip(idx){
+    var all=chipWrap.querySelectorAll(".chip");
+    all.forEach(function(c,i){ c.setAttribute("aria-pressed", i===idx ? "true":"false"); });
+  }
+
+  /* ---------- Header builder ---------- */
+  function header(){
+    var d=elDecision.value.trim(), c=elContext.value.trim(), o=elOptions.value.trim();
+    var lines=[];
+    lines.push("DECISION: "+(d||"[state your decision in one sentence]"));
+    lines.push("CONTEXT: "+(c||"[key facts, constraints, and what's at stake]"));
+    if(o) lines.push("OPTIONS:\n"+o);
+    return lines.join("\n");
+  }
+
+  function buildPrompt(move){ return header()+"\n\n"+BODIES[move]; }
+
+  /* ---------- Render output ---------- */
+  function render(move){
+    activeMove=move;
+    var meta=META[move], label=meta[0], phase=meta[1];
+    elWhich.innerHTML='<span class="tag '+phase+'">'+PHASE_NAME[phase]+'</span>'+label;
+    elOut.textContent=buildPrompt(move);
+    elOut.classList.remove("empty");
+    // pressed state on move buttons
+    document.querySelectorAll(".move,.run-phase,.run-all").forEach(function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-move")===move ? "true":"false");
+    });
+    resetCopy();
+  }
+
+  /* keep output in sync when fields change after a move is shown */
+  function refresh(){
+    updateWorking();
+    if(activeMove){ elOut.textContent=buildPrompt(activeMove); resetCopy(); }
+  }
+  function updateWorking(){
+    var d=elDecision.value.trim();
+    if(d){ elWorking.innerHTML="Working decision: <b>"+escapeHtml(d)+"</b>"; elWorking.classList.add("show"); }
+    else { elWorking.classList.remove("show"); }
+  }
+  function escapeHtml(t){return t.replace(/[&<>]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[m];});}
+
+  /* ---------- Wire move buttons ---------- */
+  document.querySelectorAll("[data-move]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      if(!elDecision.value.trim()){
+        elWorking.innerHTML="Add your <b>decision</b> in step 2 first — then pick a move.";
+        elWorking.classList.add("show");
+        elDecision.focus();
+        return;
+      }
+      render(btn.getAttribute("data-move"));
+      elOut.scrollIntoView({behavior:"smooth",block:"nearest"});
+    });
+  });
+
+  [elDecision,elContext,elOptions].forEach(function(f){ f.addEventListener("input",refresh); });
+
+  /* ---------- Copy ---------- */
+  function resetCopy(){ elCopy.textContent="Copy prompt"; elCopy.classList.remove("ok"); }
+  function copyText(t){
+    return new Promise(function(resolve){
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(function(){resolve(true);},function(){resolve(fallback(t));});
+      } else { resolve(fallback(t)); }
+    });
+  }
+  function fallback(t){
+    try{
+      var ta=document.createElement("textarea");
+      ta.value=t; ta.style.position="fixed"; ta.style.top="-1000px"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      var ok=document.execCommand("copy"); document.body.removeChild(ta); return ok;
+    }catch(e){ return false; }
+  }
+  elCopy.addEventListener("click",function(){
+    if(!activeMove) return;
+    copyText(elOut.textContent).then(function(ok){
+      if(ok){ elCopy.textContent="Copied ✓"; elCopy.classList.add("ok"); }
+      else { elCopy.textContent="Select all & press Ctrl/Cmd+C"; selectOutput(); }
+      setTimeout(resetCopy,1900);
+    });
+  });
+  function selectOutput(){
+    try{ var r=document.createRange(); r.selectNodeContents(elOut);
+      var sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r); }catch(e){}
+  }
+
+  updateWorking();
+})();
+</script>
+</body>
+</html>
